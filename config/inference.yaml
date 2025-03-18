@@ -1,0 +1,42 @@
+method: "inference"
+num_channels: 1
+ngpus_per_node: 1
+
+# Dataset options
+dataset: "sar_tiles"
+geotiff_dir: "data/edwin5" # Override to point to example data
+preprocessed_dir: null
+output_dir: "output" # Override output dir
+identification_table_path: "output/positive_eddy_identifications.csv" # Override output path
+
+land_shapefile: "data/land_mask/ne_10m_land.shp"
+window_size: 700
+stride_factor: 0.25
+land_threshold: 0.8
+nodata_threshold: 0.9
+var_threshold: 1.0e-5
+
+# Model options
+arch: "r50_1x_sk0"
+num_classes: 2
+pretrain: "model_checkpoints/checkpoint.tar" # Edwin renamed checkpoint_ybkalzbi.tar to checkpoint.tar
+
+# Inference options
+batch_size: 128
+output_dir: "output"
+identification_table_path: "output/positive_eddy_identifications.csv"
+positive_class_index: 1
+device: "cuda"
+
+# Prefilter configuration (nested structure)
+prefilter:
+  enabled: false
+  store_results: false
+  pass_classes: [2]
+  model:
+    arch: "r50_1x_sk0"
+    num_classes: 10
+    pretrain: null
+
+workers: 2
+device: "cpu" # Default to CPU for broader demo compatibility
