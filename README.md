@@ -1,190 +1,111 @@
 # SAR Eddy Detection Demo
 
-This repository contains a demo for detecting ocean eddies from Synthetic Aperture Radar (SAR) imagery. The demo uses a pretrained model (`r50_1x_sk0`) to process SAR GeoTIFF files, identify eddy features, and generate output visualizations.
+Demonstration project for detecting ocean eddies from Synthetic Aperture Radar (SAR) imagery using a pretrained model (`r50_1x_sk0`). This demo processes SAR GeoTIFF files, identifies eddies, and generates visual output for further analysis.
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Quick Start](#quick-start)
+- [Installation](#installation)
+- [Directory Structure](#directory-structure)
+- [Usage](#usage)
+- [Outputs](#outputs)
+<!-- - [Contributing](#contributing) -->
+<!-- - [License](#license) -->
+
+```mermaid
+flowchart TD
+    subgraph Data_Input["Data Input"]
+      A["Input SAR Frame (GeoTIFF/JP2)"]
+      B["Land Mask Data (Natural Earth Shapefile)"]
+    end
+
+    subgraph Preprocessing["Preprocessing & Tile Extraction"]
+      C["SARTileDataset"]
+      D["Land Masking & Tile Extraction"]
+    end
+
+    subgraph Inference["Model Inference"]
+      E["Load Pretrained Model (r50_1x_sk0 via ResNet50)"]
+      F["Inference Pipeline (EddyDetector)"]
+    end
+
+    subgraph Postprocessing["Postprocessing & Merging"]
+      G["Merging Detections (Merge CSV Bounding Boxes)"]
+      H["CSV Output (positive_eddy_identifications.csv)"]
+    end
+
+    subgraph Visualization["Visualization"]
+      I["Preview Image Generation (visualize_eddy_bbox)"]
+    end
+
+    A --> D
+    B --> D
+    D --> C
+    C --> F
+    E --> F
+    F --> G
+    G --> H
+    H --> I
+```
+
+## Overview
+
+This repository showcases how to use a pretrained ResNet-50-based model to detect ocean eddies from SAR imagery. The core functionality is implemented in [`src/main.py`](src/main.py), which loads the configuration, preprocesses input data, runs model inference, and generates output visualizations.
+
+To keep the main README focused on the demo’s mechanics and results, detailed installation instructions and a full directory layout have been moved to separate Markdown files:
+- See the [Installation Guide](INSTALLATION.md) for environment setup.
+- Review the [Directory Structure Documentation](STRUCTURE.md) for a complete overview of the project layout.
+
+## Quick Start
+
+1. **Clone the repository.**
+2. **Set up your environment** by following the [Installation Guide](INSTALLATION.md).
+3. **Familiarize yourself with the project layout** in the [Directory Structure Documentation](STRUCTURE.md).
+4. **Run the demo**:
+   ```bash
+   python src/main.py --config config/inference.yaml
+   ```
+
+## Installation
+
+For full details on installation—including setting up with Conda or venv/pip and platform-specific notes—please refer to the [Installation Guide](INSTALLATION.md).
+
+If you already have Conda on your system, you can do:
+
+```bash
+conda create --name sar_eddy_env python=3.10 pandas rasterio libgdal geopandas shapely tqdm pyyaml pytorch torchvision -c conda-forge
+```
 
 ## Directory Structure
 
-```
-config/
-├── default.yaml (Global default settings)
-└── inference.yaml (Settings specific to running inference)
-data/
-├── land_mask
-│   ├── ne_10m_land.shp (Natural Earth land boundary shapefile)
-│   └── ne_10m_land.shx (Spatial index for land shapefile)
-└── README.md (Instructions for data)
-model_checkpoints/
-└── checkpoint.tar (Pretrained model checkpoint)
-src/
-├── __init__.py (Initializes the src directory as a package)
-├── dataset.py (Data handling and preprocessing)
-├── inference.py (Model inference pipeline logic)
-├── main.py (Main entry point)
-├── model.py (Currently supports only r50_1x_sk0 model)
-├── visualize_eddy_bbox.py (Tools for visualizing detected eddy bounding boxes)
-├── models/
-│   ├── __init__.py (Package initialization for models)
-│   └── simclr_resnet.py (SimCLR ResNet implementation)
-└── utils/
-    ├── __init__.py (Package initialization for utilities)
-    ├── bbox.py (Bounding box manipulation functions)
-    └── config.py (Configuration parsing functions)
-demos/
-├── preview_demo.ipynb (Placeholder notebook for image previews)
-└── run_demo.sh (Shell script for running the pipeline)
-output/
-└── (Directory for output results)
-```
+A well-organized repository makes it easy to locate files and understand project organization. For a complete breakdown of the directory layout, see the [Directory Structure Documentation](STRUCTURE.md).
 
-## Getting Started
-### Installation
+## Usage
 
-You can set up the environment using either conda or venv/pip.
+The demo workflow, executed by `src/main.py`, consists of these steps:
+- **Configuration:** Loads settings from `config/inference.yaml`.
+- **Preprocessing:** Uses `src/dataset.py` to handle and prepare SAR GeoTIFF files.
+- **Inference:** Runs the pretrained model via `src/model.py` to detect eddies.
+- **Visualization:** Generates and saves output visualizations using `src/visualize_eddy_bbox.py`.
 
-#### Option 1: Conda (Recommended)
-
-We recommend using conda to manage your environment. Conda allows for easy installation of scientific packages, especially those with binary dependencies.
-
-**1. Install Conda:**
-
-If you don't have conda installed, follow the instructions for your operating system from [Miniforge](https://conda-forge.org/download/).
-
-#### Installing Miniforge
-
-Miniforge provides a minimal conda installation tailored for the `conda-forge` ecosystem.  
-Choose the correct installer for your operating system and architecture from the table below:
-
-| Operating System       | Architecture | Download Command                                                                                                          | Installation Command                                    |
-|------------------------|-------------|---------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|
-| **Linux**             | x86_64      | `wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh`           | `bash Miniforge3-Linux-x86_64.sh`           |
-| **Linux**             | aarch64     | `wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-aarch64.sh`          | `bash Miniforge3-Linux-aarch64.sh`          |
-| **macOS** (Intel)     | x86_64      | `wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-x86_64.sh`          | `bash Miniforge3-MacOSX-x86_64.sh`          |
-| **macOS** (Apple Sil.)| arm64       | `wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-MacOSX-arm64.sh`           | `bash Miniforge3-MacOSX-arm64.sh`           |
-| **Windows**           | x86_64      | `curl -LO "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Windows-x86_64.exe"` | Double-click the `.exe` and follow on-screen prompts     |
-
-> **Note for Windows users:**  
-> You can run the `curl` command from a PowerShell terminal. After the download finishes, run (double-click) the `.exe` installer and follow the on-screen instructions to complete installation.
-
-
-**2. Create a Conda Environment:**
-
-Open your terminal or Anaconda Prompt and use the following commands to create a conda environment named `sar_eddy_env`. These instructions are the same for Mac, Windows, and Linux.
-
+To run the demo, execute:
 ```bash
-conda create -n sar_eddy_env python=3.10
-conda activate sar_eddy_env
+python src/main.py --config config/inference.yaml
 ```
+For more details on modifying the workflow, please check the inline comments in the source code.
 
-**3. Install Required Packages:**
-```
-conda install numpy pandas matplotlib rasterio geopandas shapely tqdm pyyaml -c conda-forge
+## Outputs
 
-conda install pytorch torchvision -c conda-forge
-```
+After running the demo, expect the following outputs:
+- **Visualizations:** Detected eddy bounding boxes and overlays saved in the `output/` directory.
+- **Logs and Metrics:** Console output and log files that summarize the detection process and statistics.
+- **Data Summaries:** Any generated metadata that provides insights into the detection results.
 
-**Platform-specific notes for Conda:**
+<!-- ## Contributing
 
-- **Windows Users:** If you encounter issues with `rassterio` installation via conda, try installing it with pip after activating your conda environment: `pip install rasterio`
-- **Mac Users (Apple Silicon):** For improved performance on Apple Silicon (M1/M2/M3) Macs, install the accelerated `libblas` library: `conda install "libblas-*=*accelerate" -c conda-forge
-- **GPU Support (PyTorch):** The above command installs the CPU version of PyTorch. For GPU support, you need to install the CUDA-enabled version. Follow the [PyTorch installation instructions](https://pytorch.org/get-started/locally/) to find the correct command for your CUDA version.
+Contributions to enhance the demo or extend its functionality are welcome. Please review our [Contributing Guidelines](CONTRIBUTING.md) for instructions on reporting issues, proposing improvements, and submitting pull requests. -->
 
-#### Option 2: venv and pip
+<!-- ## License
 
-If you prefer not to use conda, you can use Python's built-in `venv` for environment management and `pip` for package installation.
-
-**1. Create a Virtual Environment:**
-
-Open your terminal and navigate to the root directory of the repository. Create a virtual environment:
-
-```bash
-python -m venv venv
-```
-
-**2. Activate the Virtual Environment:**
-
-Activate the virtual environment for your operating system:
-
-*   **Linux/Mac:**
-    ```bash
-    source venv/bin/activate
-    ```
-*   **Windows:**
-    ```bash
-    venv\Scripts\activate
-    ```
-
-**3. Upgrade pip and Install Required Packages using pip:**
-
-It's recommended to upgrade pip before installing dependencies. Then, install the required packages from the `requirements.txt` file:
-
-```bash
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-**(Optional) Using `setup.py`:**
-
-Users can install the project and its dependencies using pip with the following command from the repository root directory:
-
-```bash
-pip install -e .
-```
-
-This command installs the project in editable mode ( `-e .`), meaning changes to the `src` directory will be immediately reflected without reinstalling.
-
-
-### Configuration
-
-Edit the configuration files in the config/ folder if needed:
-- **inference.yaml**: Contains settings specific to inference (e.g., batch size, model checkpoint path).
-
-### Data
-
-1.  **Land Mask:** Download the land shapefile (ne_10m_land.shp) and place it in the data/land_mask/ directory. You can obtain this from [Natural Earth](https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-land/).
-2.  **SAR Tile:** Obtain a sample SAR GeoTIFF tile and rename it to $exampleTileFileName. Place this file in the data/ directory. For demonstration purposes, you can use a small tile.
-
-### Running the Demo
-
-You can run the demo pipeline using:
-
-  ```bash
-  python src/main.py --config config/inference.yaml
-  ```
-
-This script calls the main entry point (in src/main.py) which:
-1. Loads the configuration.
-2. Sets up the dataset (using src/dataset.py).
-3. Loads the pretrained ResNet-50 model (via src/model.py).
-4. Runs inference to detect ocean eddies.
-5. Saves detection outputs and (optionally) generates preview images.
-
-<!-- ### Interactive Demo
-
-For a more interactive demonstration, open the placeholder Jupyter Notebook:
-
-  ```bash
-  jupyter notebook demos/preview_demo.ipynb
-  ```
-**Note:** demos/preview_demo.ipynb is a placeholder file. You can replace it with a Jupyter Notebook to show preview image generation if you implement that feature. -->
-
-## Simplified Model Loading
-
-For this demo, we only support the ResNet-50 (`r50_1x_sk0`) model architecture. The model loading process is encapsulated in [src/model.py](src/model.py) and is designed to be easily extended to support additional architectures in the future.
-
-## Checkpoint and Example Data
-
-- **Checkpoint:** The `model_checkpoints/` directory should contain the model checkpoint file named $modelFileName.
-- **Example SAR Tile:** The data/ directory should contain the example SAR GeoTIFF tile named $exampleTileFileName.
-
-<!-- ## Future Work
-
-- **Support Multiple Models:** Extend src/model.py to handle additional architectures and checkpoints.
-- **Enhanced Logging:** Integrate a logging framework for better runtime diagnostics.
-- **Deployment Pipeline:** Build a full-fledged operational system with web interfaces or cloud integration.
-- **More Robust Data Handling:** Add data validation and preprocessing improvements.
-- **Implement Preview Image Generation:** Create a Jupyter Notebook (demos/preview_demo.ipynb) to demonstrate visualization of detection results.
-
-## License
-
-[MIT License](LICENSE) -->
+This project is open source and available under the MIT License. See the [LICENSE](LICENSE) file for full details. -->

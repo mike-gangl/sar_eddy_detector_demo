@@ -287,7 +287,7 @@ def validate_compressed(original_masked_tif, compressed_jp2, debug=False):
         orig_data[orig_data == nodata_in] = np.nan
 
     # Re-expand from JP2 using the extracted tags
-    comp_data = reexpand_from_jp2(compressed_jp2, debug=debug)
+    comp_data = expand_from_jp2(compressed_jp2, debug=debug)
 
     if debug:
         print(
@@ -406,7 +406,7 @@ def plot_comparison_with_residual(orig_data, comp_data, band=0):
 def main():
     """
     Example usage:
-      python compress_sar_tiff_with_land_mask.py \
+      python compress_sar_with_jpeg2000.py \
         --input my_sar.tif \
         --shapefile land_polygons.shp \
         --outlier_percentile 99 \
