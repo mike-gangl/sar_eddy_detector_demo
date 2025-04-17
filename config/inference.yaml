@@ -4,8 +4,8 @@ ngpus_per_node: 1
 
 # Dataset options
 dataset: "sar_tiles"
-geotiff_dir: "data/edwin5" # Override to point to example data
-preprocessed_dir: null
+geotiff_dir: "data/" # Override to point to example data
+preprocessed_dir: "data/"
 output_dir: "output" # Override output dir
 identification_table_path: "output/positive_eddy_identifications.csv" # Override output path
 
