@@ -49,7 +49,7 @@ conda activate sar_eddy_env
 Install the necessary dependencies using Conda from the `conda-forge` channel:
 
 ```bash
-conda install pandas rasterio libgdal geopandas shapely tqdm pyyaml -c conda-forge
+conda install pandas rasterio libgdal "geopandas>1.0.0" shapely tqdm pyyaml -c conda-forge
 conda install pytorch torchvision -c conda-forge
 ```
 

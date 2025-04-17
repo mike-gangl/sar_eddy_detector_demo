@@ -34,7 +34,10 @@ def get_model(args) -> nn.Module:
             )
         if not os.path.exists(checkpoint_path):
             raise FileNotFoundError(f"Pretrained model not found at: {checkpoint_path}")
-        load_state_dict_subset(resnet, torch.load(checkpoint_path, weights_only=True))
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        load_state_dict_subset(
+            resnet, torch.load(checkpoint_path, weights_only=True, map_location=device)
+        )
         return resnet
     else:
         raise NotImplementedError(
